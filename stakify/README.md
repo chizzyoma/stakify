@@ -1,91 +1,83 @@
 # Stakify Smart Contract
 
-Stakify is a decentralized finance (DeFi) smart contract written in Clarity that enables yield optimization through staking, liquidity provision, and leveraged trading functionalities.
+## Overview
+
+Stakify is a yield optimization smart contract built on the Stacks blockchain. It provides a platform for users to stake tokens, manage liquidity, engage in leveraged trading, and earn rewards. The contract is designed with safety and flexibility in mind, incorporating emergency controls and a robust reward system.
 
 ## Features
 
-### Token Staking and Yield Generation
-- Deposit tokens into the protocol
-- Withdraw tokens from staking positions
-- Built-in overflow protection for token operations
+1. **Token Staking**: Users can deposit and withdraw tokens.
+2. **Liquidity Pool Management**: Provides functionality to add and remove liquidity.
+3. **Leveraged Trading**: Allows users to create and manage leveraged positions.
+4. **Reward System**: Implements a point-based reward system with claiming functionality.
+5. **Emergency Controls**: Includes contract pause/unpause and admin management features.
+
+## Contract Functions
+
+### Emergency Controls
+
+- `pause-contract()`: Pauses the contract operations.
+- `unpause-contract()`: Resumes the contract operations.
+- `change-emergency-admin(new-admin: principal)`: Changes the emergency admin.
+
+### Reward System
+
+- `get-pending-rewards(user: principal)`: Calculates pending rewards for a user.
+- `update-reward-rate(new-rate: uint)`: Updates the reward rate.
+- `claim-rewards()`: Allows users to claim their accumulated rewards.
+- `add-reward-points(points: uint)`: Adds reward points to a user's account.
+
+### Staking and Yield
+
+- `deposit-tokens(quantity: uint)`: Deposits tokens into the contract.
+- `withdraw-tokens(quantity: uint)`: Withdraws tokens from the contract.
 
 ### Liquidity Pool Management
-- Provide liquidity with both tokens and stablecoins
-- Withdraw liquidity positions
-- Automatic balance tracking for liquidity providers
+
+- `provide-liquidity(token-quantity: uint, stablecoin-quantity: uint)`: Adds liquidity to the pool.
+- `withdraw-liquidity(token-shares: uint, stablecoin-shares: uint)`: Removes liquidity from the pool.
 
 ### Leveraged Trading
-- Create leveraged positions with customizable ratios
-- Close positions manually
-- Liquidation mechanism for risk management
-- Protection against self-liquidation
 
-## Function Documentation
-
-### Staking Functions
-- `deposit-tokens(quantity: uint) => response`
-  - Deposits the specified quantity of tokens into the protocol
-  - Returns error if numeric overflow would occur
-
-- `withdraw-tokens(quantity: uint) => response`
-  - Withdraws the specified quantity of tokens from the protocol
-  - Returns error if insufficient tokens are available
-
-### Liquidity Functions
-- `provide-liquidity(token-quantity: uint, stablecoin-quantity: uint) => response`
-  - Adds liquidity to the pool in both tokens and stablecoins
-  - Returns the amounts added to the pool
-
-- `withdraw-liquidity(token-shares: uint, stablecoin-shares: uint) => response`
-  - Removes liquidity from the pool
-  - Returns the amounts withdrawn
-
-### Leverage Trading Functions
-- `create-leveraged-position(quantity: uint, leverage-ratio: uint) => response`
-  - Creates a leveraged trading position
-  - Leverage ratio must be between 1 and 100
-  - Returns the created position details
-
-- `close-leveraged-position() => response`
-  - Closes an existing leveraged position
-  - Returns the closed position details
-
-- `force-liquidation(user: principal) => response`
-  - Allows liquidation of other users' positions
-  - Prevents self-liquidation attempts
+- `create-leveraged-position(quantity: uint, leverage-ratio: uint)`: Creates a leveraged position.
+- `close-leveraged-position()`: Closes the user's leveraged position.
+- `force-liquidation(user: principal)`: Allows forced liquidation of a user's position.
 
 ### Read-Only Functions
-- `get-token-deposit(user: principal) => uint`
-  - Returns the user's current token deposit amount
 
-- `get-liquidity-position(user: principal) => {tokens: uint, stablecoins: uint}`
-  - Returns the user's current liquidity position
-
-- `get-leveraged-position(user: principal) => optional {quantity: uint, ratio: uint}`
-  - Returns details of user's leveraged position if it exists
+- `get-token-deposit(user: principal)`: Returns the token deposit of a user.
+- `get-liquidity-position(user: principal)`: Returns the liquidity position of a user.
+- `get-leveraged-position(user: principal)`: Returns the leveraged position of a user.
+- `get-contract-state()`: Returns the current state of the contract.
 
 ## Error Codes
 
-- `ERR-INSUFFICIENT-TOKENS (u100)`: Not enough tokens for the requested operation
-- `ERR-INSUFFICIENT-LIQUIDITY (u101)`: Not enough liquidity for the requested operation
-- `ERR-NO-ACTIVE-POSITION (u102)`: No leveraged position exists for the user
-- `ERR-NUMERIC-OVERFLOW (u103)`: Operation would cause numeric overflow
-- `ERR-INVALID-QUANTITY (u104)`: Invalid token quantity specified
-- `ERR-INVALID-LEVERAGE-RATIO (u105)`: Leverage ratio outside allowed range
-- `ERR-SELF-LIQUIDATION-ATTEMPT (u106)`: User attempted to liquidate their own position
-
-## Data Storage
-
-The contract uses the following data maps to track user positions:
-- `token-deposits`: Tracks staked token amounts
-- `token-liquidity`: Tracks token liquidity provided
-- `stablecoin-liquidity`: Tracks stablecoin liquidity provided
-- `leveraged-positions`: Tracks leveraged trading positions
+- `ERR-INSUFFICIENT-TOKENS (u100)`: Insufficient tokens for the operation.
+- `ERR-INSUFFICIENT-LIQUIDITY (u101)`: Insufficient liquidity for the operation.
+- `ERR-NO-ACTIVE-POSITION (u102)`: No active position found.
+- `ERR-NUMERIC-OVERFLOW (u103)`: Numeric overflow detected.
+- `ERR-INVALID-QUANTITY (u104)`: Invalid quantity provided.
+- `ERR-INVALID-LEVERAGE-RATIO (u105)`: Invalid leverage ratio.
+- `ERR-SELF-LIQUIDATION-ATTEMPT (u106)`: Attempt to self-liquidate.
+- `ERR-NOT-AUTHORIZED (u401)`: Unauthorized access.
+- `ERR-CONTRACT-PAUSED (u402)`: Contract is paused.
+- `ERR-NO-REWARDS (u501)`: No rewards available.
+- `ERR-REWARDS-ALREADY-CLAIMED (u502)`: Rewards already claimed.
+- `ERR-NOT-ADMIN (u503)`: Not an admin.
+- `ERR-INVALID-ADMIN (u504)`: Invalid admin address.
+- `ERR-INVALID-REWARD-RATE (u505)`: Invalid reward rate.
+- `ERR-INVALID-REWARD-POINTS (u506)`: Invalid reward points.
 
 ## Security Considerations
 
-1. The contract includes overflow protection for all numerical operations
-2. Leveraged positions are protected against self-liquidation
-3. All state-changing functions include appropriate balance checks
-4. Leverage ratios are strictly bounded to prevent excessive risk
+1. The contract includes emergency controls to pause operations if needed.
+2. Input validation is implemented to prevent overflow and invalid data.
+3. Access control is enforced for admin-only functions.
+4. The contract uses safe math operations to prevent underflows and overflows.
 
+## Deployment
+
+To deploy this contract:
+
+1. Ensure you have the Stacks CLI installed and configured.
+2. Deploy the contract using the Stacks CLI:
