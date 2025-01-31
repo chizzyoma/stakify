@@ -17,6 +17,9 @@
 (define-constant ERR-NO-REWARDS (err u501))
 (define-constant ERR-REWARDS-ALREADY-CLAIMED (err u502))
 (define-constant ERR-NOT-ADMIN (err u503))
+(define-constant ERR-INVALID-ADMIN (err u504))
+(define-constant ERR-INVALID-REWARD-RATE (err u505))
+(define-constant ERR-INVALID-REWARD-POINTS (err u506))
 
 ;; Data Variables
 (define-data-var contract-paused bool false)
@@ -53,6 +56,7 @@
 (define-public (change-emergency-admin (new-admin principal))
   (begin
     (asserts! (is-admin) ERR-NOT-AUTHORIZED)
+    (asserts! (is-some (some new-admin)) ERR-INVALID-ADMIN)
     (var-set emergency-admin (some new-admin))
     (ok true)))
 
@@ -69,6 +73,7 @@
 (define-public (update-reward-rate (new-rate uint))
   (begin
     (asserts! (is-admin) ERR-NOT-AUTHORIZED)
+    (asserts! (> new-rate u0) ERR-INVALID-REWARD-RATE)
     (var-set rewards-per-block new-rate)
     (ok new-rate)))
 
@@ -87,10 +92,13 @@
 (define-public (add-reward-points (points uint))
   (begin
     (asserts! (not (var-get contract-paused)) ERR-CONTRACT-PAUSED)
+    (asserts! (> points u0) ERR-INVALID-REWARD-POINTS)
     (let 
-      ((current-points (default-to u0 (map-get? reward-points tx-sender))))
+      ((current-points (default-to u0 (map-get? reward-points tx-sender)))
+       (new-total-points (+ (var-get total-reward-points) points)))
+      (asserts! (< new-total-points u340282366920938463463374607431768211455) ERR-NUMERIC-OVERFLOW)
       (map-set reward-points tx-sender (+ current-points points))
-      (var-set total-reward-points (+ (var-get total-reward-points) points))
+      (var-set total-reward-points new-total-points)
       (ok points))))
 
 ;; Staking and Yield section
